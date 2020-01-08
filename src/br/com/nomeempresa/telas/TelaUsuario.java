@@ -5,19 +5,95 @@
  */
 package br.com.nomeempresa.telas;
 
+import java.sql.*;
+import br.com.nomeempresas.dao.ModuloConexao;
+import javax.swing.JOptionPane;
 /**
  *
  * @author Felip
  */
+
+
 public class TelaUsuario extends javax.swing.JInternalFrame {
 
     /**
      * Creates new form TelaUsuario
      */
+    
+    Connection conexao = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+    
+    
     public TelaUsuario() {
         initComponents();
+        conexao = ModuloConexao.conector();
     }
-
+    
+    //metodo para consultar usuários
+    private void consultar(){
+        String sql = "select * from tbusuarios where iduser=?";
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtUsuId.getText());
+            rs = pst.executeQuery();
+            
+            if(rs.next()){
+                //pega o segundo campo da tabela e coloca no campo de texto
+                txtUsuNome.setText(rs.getString(2));
+                txtUsuFone.setText(rs.getString(3));
+                txtUsuLogin.setText(rs.getString(4));
+                txtUsuSenha.setText(rs.getString(5));
+                //a linha abaixo se refere ao combobox
+                cboUsuPerfil.setSelectedItem(rs.getString(6));
+            }else{
+                JOptionPane.showMessageDialog(null, "Usuário não cadastrado no sistema...");
+                //limpando os campos de texto
+                txtUsuNome.setText(null);
+                txtUsuFone.setText(null);
+                txtUsuLogin.setText(null);
+                txtUsuSenha.setText(null);
+                cboUsuPerfil.setSelectedItem(null);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+    
+    //metodo para adicionar usuários
+    private void adicionar(){
+        String sql = "insert into tbusuarios(iduser, usuario, fone, login,"
+                + " senha, perfil) values(?,?,?,?,?,?)";
+        
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtUsuId.getText());
+            pst.setString(2, txtUsuNome.getText());
+            pst.setString(3, txtUsuFone.getText());
+            pst.setString(4, txtUsuLogin.getText());
+            pst.setString(5, txtUsuSenha.getText());
+            pst.setString(6, cboUsuPerfil.getSelectedItem().toString());
+            
+            //inserindo dados no banco e armazenando valor de retorno
+            int adicionado = pst.executeUpdate();
+            //confirmando inserção dos dados
+            if(adicionado>0){
+                JOptionPane.showMessageDialog(null, "Usuário adicionado com sucesso!");
+                txtUsuId.setText(null);
+                txtUsuNome.setText(null);
+                txtUsuFone.setText(null);
+                txtUsuLogin.setText(null);
+                txtUsuSenha.setText(null);
+                cboUsuPerfil.setSelectedItem(null);
+            }
+            
+           
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -91,11 +167,21 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
         btnUsuCreate.setToolTipText("Adicionar");
         btnUsuCreate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnUsuCreate.setPreferredSize(new java.awt.Dimension(80, 80));
+        btnUsuCreate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUsuCreateActionPerformed(evt);
+            }
+        });
 
         btnUsuSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/nomeempresa/icones/search.png"))); // NOI18N
         btnUsuSearch.setToolTipText("Pesquisar");
         btnUsuSearch.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnUsuSearch.setPreferredSize(new java.awt.Dimension(80, 80));
+        btnUsuSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUsuSearchActionPerformed(evt);
+            }
+        });
 
         btnUsuUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/nomeempresa/icones/update.png"))); // NOI18N
         btnUsuUpdate.setToolTipText("Atulizar registro");
@@ -204,6 +290,17 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
     private void cboUsuPerfilActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboUsuPerfilActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cboUsuPerfilActionPerformed
+
+    private void btnUsuSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuSearchActionPerformed
+        // TODO add your handling code here:
+        //chamando o metodo consultar
+        consultar();
+    }//GEN-LAST:event_btnUsuSearchActionPerformed
+
+    private void btnUsuCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuCreateActionPerformed
+        // TODO add your handling code here:
+        adicionar();
+    }//GEN-LAST:event_btnUsuCreateActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
